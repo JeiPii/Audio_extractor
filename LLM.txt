@@ -1,0 +1,96 @@
+# LLM.txt - Runbook for Audio Extractor + Transcriber CLI
+
+## Purpose
+This project provides a CLI that:
+1) extracts audio from an MP4 with ffmpeg,
+2) transcribes audio with local faster-whisper by default,
+3) writes transcript files (txt/srt/vtt/json).
+
+## Project layout
+- Entry point script: `transcribe-video` (defined in `pyproject.toml`)
+- Main CLI module: `src/app/cli.py`
+- Pipeline orchestration: `src/app/pipeline.py`
+
+## Prerequisites
+- Python 3.11+
+- `ffmpeg` and `ffprobe` available in PATH
+
+## Install
+From project root:
+
+```bash
+pip install -e .
+```
+
+Optional backends:
+
+```bash
+pip install -e .[openai]
+pip install -e .[gemini]
+```
+
+For tests:
+
+```bash
+pip install -e .[dev]
+```
+
+## Core command
+Single file:
+
+```bash
+transcribe-video /absolute/path/video.mp4
+```
+
+Batch mode (directory or glob):
+
+```bash
+transcribe-video --batch "/absolute/path/videos/*.mp4" --output-dir ./output
+```
+
+## Important CLI options
+- `--backend local|openai|gemini` (default: `local`)
+- `--model tiny|base|small|medium|large-v3` (default: `medium`)
+- `--language <code|auto>` (default: `auto`)
+- `--output-dir <path>` (default: `./output`)
+- `--formats txt,srt,vtt,json` (default: `txt,srt`)
+- `--keep-audio` to preserve extracted WAV
+- `--device auto|cpu|cuda` (default: `auto`)
+
+## Environment variables
+Only required for cloud backends:
+
+- `OPENAI_API_KEY` for `--backend openai`
+- `GEMINI_API_KEY` for `--backend gemini`
+
+## Outputs
+For input `/path/myvideo.mp4` and default formats, output files are:
+- `<output-dir>/myvideo.txt`
+- `<output-dir>/myvideo.srt`
+
+If batch items fail, a marker is created:
+- `<output-dir>/<stem>.failed`
+
+## Exit codes
+- `0` success
+- `2` invalid input/arguments
+- `3` dependency/config error (e.g., missing ffmpeg or API key)
+- `4` transcription failure
+
+## Recommended default run (free/local)
+Use local backend to avoid API costs:
+
+```bash
+transcribe-video /absolute/path/video.mp4 --backend local --formats txt,srt --model medium
+```
+
+## Troubleshooting checklist
+1) If command not found: ensure package is installed in active environment (`pip install -e .`).
+2) If ffmpeg errors: verify `ffmpeg -version` and `ffprobe -version` work.
+3) If API backend errors: confirm correct API key env var is set.
+4) If local transcription is slow: try `--model small` or `--device cuda` (if GPU available).
+
+## Notes for LLM agents
+- Prefer absolute paths for input/output to avoid cwd ambiguity.
+- Treat cloud backends as optional; local backend is primary path.
+- If testing in constrained sandboxes, unit tests may run without real ffmpeg/API keys via monkeypatching.
