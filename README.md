@@ -1,0 +1,102 @@
+# Audio Extractor + Transcriber CLI
+
+Python CLI to:
+1. Extract audio from MP4 using `ffmpeg`.
+2. Transcribe audio with local `faster-whisper` (default), or optional OpenAI/Gemini backends.
+3. Write transcript outputs (`txt`, `srt`, optional `vtt`, `json`).
+
+## Requirements
+
+- Python 3.11+
+- `ffmpeg` and `ffprobe` installed and available in `PATH`
+
+Install dependencies:
+
+```bash
+pip install -e .
+```
+
+Optional cloud backends:
+
+```bash
+pip install -e .[openai]
+pip install -e .[gemini]
+```
+
+Dev/test dependencies:
+
+```bash
+pip install -e .[dev]
+```
+
+## Usage
+
+Single file:
+
+```bash
+transcribe-video /path/to/video.mp4
+```
+
+Single file with options:
+
+```bash
+transcribe-video /path/to/video.mp4 \
+  --backend local \
+  --model medium \
+  --language auto \
+  --output-dir ./output \
+  --formats txt,srt \
+  --device auto
+```
+
+Batch mode (directory or glob):
+
+```bash
+transcribe-video --batch "/path/to/videos/*.mp4" --output-dir ./output
+```
+
+### CLI Options
+
+- `--backend {local,openai,gemini}` default `local`
+- `--model {tiny,base,small,medium,large-v3}` default `medium`
+- `--language <code|auto>` default `auto`
+- `--output-dir <path>` default `./output`
+- `--formats <txt,srt,vtt,json>` default `txt,srt`
+- `--keep-audio/--no-keep-audio` default `--no-keep-audio`
+- `--batch <glob_or_dir>` optional batch mode
+- `--device {auto,cpu,cuda}` default `auto`
+
+## API Keys
+
+Set keys only when using cloud backends:
+
+```bash
+export OPENAI_API_KEY="..."
+export GEMINI_API_KEY="..."
+```
+
+## Exit Codes
+
+- `0`: success
+- `2`: invalid input/arguments
+- `3`: dependency/config error
+- `4`: transcription failure
+
+## Notes on Cost and Subscriptions
+
+- Local backend (`faster-whisper`) is free per-use after setup.
+- OpenAI and Gemini backend usage is billed via their API credentials.
+- A ChatGPT subscription does not automatically include OpenAI API usage credits.
+
+## Troubleshooting
+
+- `ffmpeg is not installed`: install `ffmpeg` and ensure it is in `PATH`.
+- `Input file has no audio stream`: verify the MP4 contains audio.
+- `Missing API key for backend`: export the backend key before running.
+- Slow local transcription: use `--model small` or `--device cuda` when GPU is available.
+
+## Test
+
+```bash
+pytest -q
+```
