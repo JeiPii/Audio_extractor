@@ -11,23 +11,11 @@ Python CLI to:
 - `ffmpeg` and `ffprobe` installed and available in `PATH`
 
 Install dependencies:
+The quickest install is to go to the root folder of Audio_extractor where the pyproject.toml is located and use the `pipx install -e .` 
+From this moment you can use the newly added transcribe-video command.
 
-```bash
-pip install -e .
-```
-
-Optional cloud backends:
-
-```bash
-pip install -e .[openai]
-pip install -e .[gemini]
-```
-
-Dev/test dependencies:
-
-```bash
-pip install -e .[dev]
-```
+If you need guidance for Pipx installation follow the following guide:
+https://pipx.pypa.io/stable/installation/
 
 ## Usage
 
